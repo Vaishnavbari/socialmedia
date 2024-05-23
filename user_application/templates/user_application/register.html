@@ -1,0 +1,121 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url("{% static 'css/b3.jpg' %}");
+      background-size: cover;
+    }
+    section {
+      height: 100vh;
+    }
+    p {
+      color: red;
+    }
+  </style>
+  <body>
+    <section>
+      <div class="container py-5 h-100">
+        <div class="row justify-content-center align-items-center h-100">
+          <div class="col-12 col-lg-9 col-xl-7">
+            <div
+              class="card shadow-2-strong card-registration"
+              style="border-radius: 15px"
+            >
+              <div class="card-body p-4 p-md-5">
+                <center>
+                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Registration Form</h3>
+                </center>
+                {% include "user_application/message.html" %}
+                <form action="{% url 'register' %}" method="POST">
+                  {% csrf_token %}
+
+          
+
+                  <div class="form-group">
+                    <input
+                      name="firstname"
+                      type="text"
+                      id="firstname"
+                      class="form-control form-control-lg"
+                      placeholder="Enter your firstname...."
+                      value="{{data.firstname}}"
+                      required
+                    />
+                    
+                  </div>
+
+                  <div class="form-group">
+                    <input
+                      name="lastname"
+                      type="text"
+                      id="lastName"
+                      class="form-control form-control-lg"
+                      placeholder="Enter your lastname...."
+                      value="{{data.lastname}}"
+                      required
+                    />
+                   
+                  </div>
+
+                  <div class="form-group">
+                    <input
+                      name="username"
+                      type="text"
+                      id="username"
+                      class="form-control form-control-lg"
+                      placeholder="Enter your username...."
+                      value="{{data.username}}"
+                      required
+                    />
+                    
+                  </div>
+
+                  <div class="form-group">
+                    <input
+                      name="password"
+                      type="text"
+                      id="password"
+                      class="form-control form-control-lg"
+                      placeholder="Enter your password...."
+                      value="{{data.password}}"
+                      required
+                    />
+                    
+                  </div>
+
+            
+
+                  <div class="pt-2">
+                    <input
+                      class="btn btn-warning btn-lg w-100"
+                      type="submit"
+                      value="Register"
+                      required
+                    />
+                  </div>
+                </form>
+                <br />
+                <span>Do you have an account </span
+                ><a href="{% url 'login' %}">click here login</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="{% static 'js/app.js'%}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </body>
+</html>

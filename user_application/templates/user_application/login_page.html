@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url("{% static 'css/b3.jpg' %}");
+      background-size: cover;
+    }
+    section {
+      height: 100vh;
+    }
+    p {
+      color: red;
+    }
+  </style>
+  <body>
+    <section class="vh-100">
+      <div class="container justify-content-center align-items-center h-100">
+        <div class="row justify-content-center align-items-center h-100">
+          <div class="col-12 col-lg-7 col-xl-5">
+            <div
+              class="card shadow-2-strong card-registration"
+              style="
+                border-radius: 15px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              "
+            >
+              <div
+                class="card-body p-4 p-md-5 justify-content-center align-items-center"
+              >
+                <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">loginForm</h3>
+                {% include "user_application/message.html" %}
+                <form action="" method="POST">
+                  {% csrf_token %}
+                
+                  <div class="form-group">
+                    <label class="form-label" for="username">username</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      class="form-control"
+                      name="username"
+                      placeholder="Enter your username"
+                      value="{{username | default:''}}"
+                      
+                      required
+                    />
+              
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="password">passsword</label>
+                    <input
+                      type="text"
+                      id="password"
+                      class="form-control"
+                      name="password"
+                      placeholder="Enter your password"
+                      value="{{password | default:''}}"
+                      required
+                    />
+              
+                  </div>
+
+                  <div class="form-group">
+                    <input type="checkbox" id="checkbox" name="chk" {{chk}} />
+                    <label for="checkbox">rememeber me</label>
+                  </div>
+                  
+                  <div class="pt-2">
+                    <input
+                      class="btn btn-warning btn-lg w-100"
+                      type="submit"
+                      value="Log In"
+                      id="login"
+                      required
+                    />
+                  </div>
+                </form>
+                <br />
+                <span>Don't have an account</span>
+                <a href="{% url 'register' %}">click here to register</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="{% static 'js/app.js'%}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </body>
+</html>
