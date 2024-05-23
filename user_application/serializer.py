@@ -22,3 +22,7 @@ class loginserializer(serializers.Serializer):
 class post_serialzer(serializers.Serializer):
     image=serializers.ImageField()
     caption=serializers.CharField()
+
+
+class comment_serializer(serializers.Serializer):
+    comments=serializers.CharField()

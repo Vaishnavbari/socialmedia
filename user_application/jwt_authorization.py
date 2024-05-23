@@ -20,6 +20,7 @@ class JWTAuthorization(permissions.BasePermission):
     def authenticate(self, request):
         try:
             auth_header = request.headers.get('Authorization')
+            
             if not auth_header:
                 return None
 
