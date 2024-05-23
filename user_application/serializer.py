@@ -17,3 +17,8 @@ class loginserializer(serializers.Serializer):
     username=serializers.CharField()
     password=serializers.CharField()
    
+
+
+class post_serialzer(serializers.Serializer):
+    image=serializers.ImageField()
+    caption=serializers.CharField()

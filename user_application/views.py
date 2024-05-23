@@ -7,10 +7,10 @@ from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import user_registration
+from .models import user_registration,post,like,comment
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializer import userSerializer,loginserializer
+from .serializer import userSerializer,loginserializer,post_serialzer
 from rest_framework.authentication import *
 from rest_framework.permissions import *
 # from rest_framework_simplejwt.tokens import RefreshToken
@@ -77,9 +77,9 @@ class login(APIView):
 
             if user is not None:
                  auth_login(request,user)
-                #  token=get_tokens_for_user(user)
+                 token=get_tokens_for_user(user)
                 #  token=get_tokens_for_user(user=user)
-                 return Response({"msg":"user login sucessfully"})
+                 return Response({"msg":"user login sucessfully","token":token})
             else:
                 return Response("invalid login")
         else:
@@ -125,3 +125,40 @@ class update_user(APIView):
                     return Response({"message": "Data updated successfully"}, status=201)
         return Response({"error": serializer.errors}, status=400)
     
+# Post realated operartion 
+
+# created post 
+
+class created_post(APIView):
+    authentication_classes=[JWTAuthentication]
+    permission_classes=[JWTAuthorization]
+    def post(self,request,id=None):
+        if request.user:
+            serializer = post_serialzer(data=request.data)
+            if serializer.is_valid():
+                post.objects.create(image=serializer.validated_data.get("image"),user=request.user,caption=serializer.validated_data.get("caption")).save()
+                return Response({"msg":"post created sucessfully"})
+            
+    def get(self,request,id=None):
+        post_list=post.objects.all()
+        serializer = post_serialzer(post_list,many=True)
+        return Response({"msg":serializer.data})
+    
+
+class singlepost(APIView):
+    def get(self,request,pk):
+        post_list=post.objects.get(id=pk)
+        serializer = post_serialzer(post_list)
+        return Response({"msg":serializer.data})
+        
+
+      
+# like related operation
+
+# class addlike(APIView):
+#     authentication_classes=[JWTAuthentication]
+#     permission_classes=[JWTAuthorization]
+#     def post(self,request,id=None):
+#         if request.user:
+#             pass
+
