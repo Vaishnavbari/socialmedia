@@ -17,6 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .jwt_authorization import JWTAuthorization
 from rest_framework.throttling import UserRateThrottle
+from functools import wraps
 
 from .custompagination import mypagination
 def get_tokens_for_user(user):
@@ -27,13 +28,15 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
 
-# def exceptionhandling(self,func):
-#         def inner():
-#             try:
-#                 func()
-#             except:
-#                 return Response({"msg":"something went wrong"},status=500)
-#         return inner 
+
+def exceptionhandling(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            return Response({"msg": "something went wrong", "error": str(e)}, status=500)
+    return inner
 class created_user(APIView):
 
     @method_decorator(csrf_exempt)
@@ -78,7 +81,7 @@ class login(APIView):
         else:
              return Response(serializer.errors)
         
-    
+    @exceptionhandling
     def get(self,request):
         return render(request,"user_application/login_page.html")
 
@@ -123,7 +126,7 @@ class created_post(APIView):
     permission_classes=[JWTAuthorization]
     pagination_class = mypagination
     
-    # @exceptionhandling
+    @exceptionhandling
     def post(self,request,id=None):
         if request.user:
             serializer = post_serialzer(data=request.data)
@@ -132,13 +135,13 @@ class created_post(APIView):
                 return Response({"msg":"post created sucessfully"})
         return Response({"error": serializer.errors}, status=400)
             
-    # @exceptionhandling     
+    @exceptionhandling     
     def get(self,request,id=None):
         post_list=post.objects.all()
         serializer = post_serialzer(post_list,many=True)
         return Response({"msg":serializer.data})
     
-    # @exceptionhandling
+    @exceptionhandling
     def delete(self, request, id ):
         if id is not None:
             if post.objects.filter(user=request.user.id):
@@ -151,7 +154,7 @@ class created_post(APIView):
 
 class singlepost(APIView):
 
-    # @exceptionhandling
+    @exceptionhandling
     def get(self,request,pk):
         if pk is not None:
             post_list=post.objects.filter(id=pk).first()
@@ -165,7 +168,7 @@ class addlike(APIView):
     authentication_classes=[JWTAuthentication]
     permission_classes=[JWTAuthorization]
  
-    # @exceptionhandling
+    @exceptionhandling
     def post(self,request,id):
         if id is not None:
             post_list=post.objects.get(id=id)
@@ -174,7 +177,7 @@ class addlike(APIView):
                 return Response({"msg":"like added sucessfully"})
         return Response({"msg":"something went wrong"},status=400)
     
-    # @exceptionhandling
+    @exceptionhandling
     def delete(self, request, id):
         if id is not None:
             if like.objects.filter(user=request.user):
@@ -190,7 +193,7 @@ class addcomment(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [JWTAuthorization]
     
-    # @exceptionhandling
+    @exceptionhandling
     def post(self,request,id):
             if id is not None:
                 post_list = post.objects.filter(id=id).first()
@@ -201,7 +204,7 @@ class addcomment(APIView):
                         return Response({"msg":"comment added sucessfully"},status=200)
             return Response({"msg":"something went wrong"},status=400)
     
-    # @exceptionhandling
+    @exceptionhandling
     def delete(self, request, id):
         if id is not None:
             if comment.objects.filter(user=request.user):
