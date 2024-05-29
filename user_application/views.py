@@ -18,6 +18,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .jwt_authorization import JWTAuthorization
 from rest_framework.throttling import UserRateThrottle
 
+from .custompagination import mypagination
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
 
@@ -120,6 +121,7 @@ class created_post(APIView):
 
     authentication_classes=[JWTAuthentication]
     permission_classes=[JWTAuthorization]
+    pagination_class = mypagination
     
     # @exceptionhandling
     def post(self,request,id=None):
