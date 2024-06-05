@@ -61,11 +61,8 @@ class created_user(APIView):
     
     @exceptionhandling
     def post(self, request):
-
         serializer = userSerializer(data=request.data)
-
         if serializer.is_valid():
-             
              if user_registration.objects.filter(username=serializer.validated_data.get("username")).exists():
                   return Response({"message":"user already exist"},status=status.HTTP_400_BAD_REQUEST)
              else :
@@ -73,7 +70,6 @@ class created_user(APIView):
                 user.save()
                 token = get_tokens_for_user(user)
                 return Response({"message": "Data saved successfully", "token":token, "user_data":serializer.data})
-             
         else:    
              return Response({"error": serializer.errors}, status=400)
     
@@ -86,7 +82,7 @@ class userlogin(APIView):
    
     @exceptionhandling
     def post(self,request):
-       
+
         serializer=loginserializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
@@ -103,16 +99,13 @@ class userlogin(APIView):
                  login(request,user)
                  token=get_tokens_for_user(user)
                  return Response({"message":"User login sucessfully", "token":token, "user_data":serializer.data}, status=status.HTTP_200_OK)
-
             else:
                 return Response({"message":"invalid login"}, status=status.HTTP_400_BAD_REQUEST)
-            
         else:
              return Response(serializer.errors)
         
     @exceptionhandling
     def get(self,request):
-        
         return render(request,"user_application/login_page.html")
 
 
