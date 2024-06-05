@@ -118,7 +118,7 @@ class update_user(APIView):
     def put(self, request, id=None):
 
         if id is not None:
-            
+
             user=user_registration.objects.filter(id=id).first()
             serializer = userSerializer(data=request.data,partial=True) 
 
@@ -141,7 +141,7 @@ class update_user(APIView):
                         user.is_active = serializer.validated_data.get('is_active',user.is_active)
                         user.date_joined = serializer.validated_data.get('date_joined',user.date_joined)
                         user.save()
-                        return Response({"message": "Data updated successfully"}, status=status.HTTP_200_OK)
+                        return Response({"message": "Data updated successfully","user_data":serializer.data}, status=status.HTTP_200_OK)
                 else:
                     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
             else :
@@ -163,8 +163,9 @@ class created_post(APIView):
         if request.user:
             serializer = post_serialzer(data=request.data)
             if serializer.is_valid():
-                post.objects.create(image=serializer.validated_data.get("image"),user=request.user,caption=serializer.validated_data.get("caption"),title=serializer.validated_data.get("title")).save()
-                return Response({"message":"post created sucessfully","post_data":serializer.data},status=status.HTTP_200_OK)
+                post_data=post.objects.create(image=serializer.validated_data.get("image"),user=request.user,caption=serializer.validated_data.get("caption"),title=serializer.validated_data.get("title"))
+
+                return Response({"message":"post created sucessfully","post_data": post_serialzer(post_data).data},status=status.HTTP_200_OK)
             else:
                 return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -208,7 +209,7 @@ class singlepost(APIView):
                  post_data.image = serializer.validated_data.get("image", post_data.image)
                  post_data.caption = serializer.validated_data.get("caption", post_data.caption)
                  post_data.save()
-                 return Response({"message":"Your post updated sucessfully"}, status=status.HTTP_200_OK)
+                 return Response({"message":"Your post updated sucessfully","post_data":serializer.data}, status=status.HTTP_200_OK)
              else:
                  return Response({"error":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
          else:
@@ -221,20 +222,18 @@ class addlike(APIView):
  
     @exceptionhandling
     def post(self,request,id):
-        if id is not None:
-            post_id=post.objects.filter(id=id).first()
-            if post_id :
-                post_list=like.objects.filter(post_id=post_id.id,user=request.user.id).first()
-            else:
-                return Response({"message":"something went wrong"},status=status.HTTP_400_BAD_REQUEST)
-            if not post_list :
-                like.objects.create(user=request.user,post_id=post_id)
-                return Response({"message":"like added sucessfully"},status=status.HTTP_200_OK)
-            else:  
-                post_list.delete()
-                return Response({"message":"like deleted sucessfully"},status=status.HTTP_200_OK)
-        else:    
-            return Response({"message":"something went wrong"},status=status.HTTP_400_BAD_REQUEST)  
+        post_id=post.objects.filter(id=id).first()
+        if post_id :
+            post_list=like.objects.filter(post_id=post_id.id,user=request.user.id).first()
+        else:
+            return Response({"message":"something went wrong"},status=status.HTTP_404_NOT_FOUND)
+        if not post_list :
+            like.objects.create(user=request.user,post_id=post_id)
+            return Response({"message":"like added sucessfully"},status=status.HTTP_200_OK)
+        else:  
+            post_list.delete()
+            return Response({"message":"like deleted sucessfully"},status=status.HTTP_200_OK)
+    
 
 class addcomment(APIView):
 
@@ -263,7 +262,7 @@ class addcomment(APIView):
                 comment_user.delete()
                 return Response({"message":"comment deleted sucessfully"},status=status.HTTP_200_OK)
             else:
-                return Response({"message":"you are unauthorized user, you don't have permission to delete this comment"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"you are unauthorized user, you don't have permission to delete this comment"},status=status.HTTP_404_NOT_FOUND)
         else :        
             return Response({"message":"something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -281,7 +280,7 @@ class addcomment(APIView):
                 else: 
                     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"message":"you are unauthorized user, you don't have permission to edit this comment"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"you are unauthorized user, you don't have permission to edit this comment"},status=status.HTTP_404_NOT_FOUND)
         else : 
             return Response({"message":"something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
 
