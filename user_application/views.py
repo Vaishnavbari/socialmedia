@@ -178,8 +178,6 @@ class created_post(APIView):
             return Response({"error": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
             
     
-             
-
 class singlepost(APIView):
     
     authentication_classes=[JWTAuthentication]
@@ -280,7 +278,7 @@ class addcomment(APIView):
     def put(self, request, id):
         comment_id= comment.objects.filter(id=id).first()
         if comment_id :
-            comment_user = comment.objects.filter(id=comment_id.id,post_id=comment_id.post_id.id, user=request.user.id).first()
+            comment_user = comment.objects.filter(id=comment_id.id).first()
             if comment_user:
                 serializer = comment_serializer(data=request.data, partial=True)
                 if serializer.is_valid():
