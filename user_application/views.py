@@ -28,7 +28,7 @@ from .custompagination import mypagination
 
 # others 
 from functools import wraps
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 
 
 def get_tokens_for_user(user):
