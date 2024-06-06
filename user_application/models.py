@@ -27,7 +27,8 @@ class comment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+class expire_token_check(models.Model):
+    token=models.TextField(max_length=8000)
 
-    
-
-    
+class access_token(models.Model):
+    token=models.TextField(max_length=8000)

@@ -3,10 +3,16 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from .models import user_registration,post,like,comment
-from django.contrib.auth import login 
+from .models import user_registration,post,like,comment,expire_token_check,access_token
+from django.contrib.auth import login , logout
 from django.contrib.auth.hashers import make_password,check_password
 from .jwt_authorization import JWTAuthorization
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 # from rest framework 
 from rest_framework import status
@@ -14,12 +20,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import *
 from rest_framework.permissions import *
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.throttling import UserRateThrottle
+from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 
 # Import created serializer  and pagination 
-from .serializer import userSerializer,loginserializer,post_serialzer,comment_serializer
+from .serializer import userSerializer,loginserializer,post_serialzer,comment_serializer,emailserializer, passwordserializer
 from .custompagination import mypagination
 
 # others 
@@ -98,6 +102,7 @@ class userlogin(APIView):
             if user is not None:
                  login(request,user)
                  token=get_tokens_for_user(user)
+                 access_token.objects.create(token=token.get("access"))
                  return Response({"message":"User login sucessfully", "token":token, "user_data":serializer.data}, status=status.HTTP_200_OK)
             else:
                 return Response({"message":"invalid login"}, status=status.HTTP_400_BAD_REQUEST)
@@ -111,7 +116,6 @@ class userlogin(APIView):
 
 class update_user(APIView):
 
-    authentication_classes=[JWTAuthentication]
     permission_classes=[JWTAuthorization]
 
     @exceptionhandling 
@@ -154,7 +158,6 @@ class update_user(APIView):
 # created post 
 class created_post(APIView):
 
-    authentication_classes=[JWTAuthentication]
     permission_classes=[JWTAuthorization]
     pagination_class = mypagination
     
@@ -174,7 +177,6 @@ class created_post(APIView):
     
 class singlepost(APIView):
     
-    authentication_classes=[JWTAuthentication]
     permission_classes=[JWTAuthorization]
 
     @exceptionhandling     
@@ -217,7 +219,6 @@ class singlepost(APIView):
 # like related operation
 class addlike(APIView):
 
-    authentication_classes=[JWTAuthentication]
     permission_classes=[JWTAuthorization]
  
     @exceptionhandling
@@ -237,7 +238,6 @@ class addlike(APIView):
 
 class addcomment(APIView):
 
-    authentication_classes = [JWTAuthentication]
     permission_classes = [JWTAuthorization]
     
     @exceptionhandling
@@ -284,3 +284,94 @@ class addcomment(APIView):
         else : 
             return Response({"message":"something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class Logout_user(APIView):
+    
+    permission_classes = [JWTAuthorization]
+
+    @exceptionhandling
+    def get(self,request):
+            
+            if request.user :
+
+                auth_header = request.headers.get('Authorization')
+                
+                if not auth_header:
+
+                    return Response({'error': 'Authorization header missing'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                try:
+                      token = auth_header.split(" ")[1]
+
+                except IndexError:
+                    return Response({'error': 'Token format invalid'}, status=status.HTTP_400_BAD_REQUEST) 
+
+                check_token = access_token.objects.filter(token=token)
+
+                if check_token.exists():
+                    check_token.delete()
+
+                logout(request)
+
+                return Response({'message': 'Logout successful.'}, status=status.HTTP_200_OK)
+                
+            else:
+                return Response({'error': 'Somthing went wrong '}, status=status.HTTP_404_NOT_FOUND)
+
+    
+class forgot_password(APIView):
+
+    permission_classes = [JWTAuthorization]
+     
+    def post(self,request):
+        serializer=emailserializer(data=request.data)
+        if serializer.is_valid():
+            email=serializer.validated_data.get("email")
+            if user_registration.objects.filter(email=email).exists():
+                if request.user.email == serializer.validated_data.get("email"):
+                 
+                    token = default_token_generator.make_token(request.user)
+                    uid = urlsafe_base64_encode(force_bytes(request.user.id))
+                    password_reset_url = f"http://127.0.0.1:8000/password_request_confirm/{uid}/{token}"
+                
+                    email_subject = 'Password Reset Request'
+                    email_body = render_to_string('user/password_reset_email.txt', {
+                        'user': request.user,
+                        'password_reset_url': password_reset_url,
+                    })
+
+                    send_mail(email_subject, email_body, request.user.email, [request.user.email])
+                    return Response({"message": "Password reset link send sucessfully"}, status=status.HTTP_200_OK)
+                
+                else:
+                    return Response({"message":"you are unauthorized user"},status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({"message":"email is not valid"},status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class password_confirm_mail(APIView) :
+
+    def post(self,request, uidb64, token) :
+        
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = user_registration.objects.filter(id=uid).first()
+
+        if user and default_token_generator.check_token(user, token) :
+
+            serializer = passwordserializer(data=request.data)
+
+            if serializer.is_valid() :
+              password = serializer.validated_data.get("password")
+              if password :
+                user.password = make_password(password)
+                user.save()
+                return Response({"message":"Password reset sucessfully"}, status=status.HTTP_200_OK)
+              else :
+                return Response({"message":"Please provide the password"}, status=status.HTTP_404_NOT_FOUND)
+            else :
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else :
+            return Response({"message":'Invalid password reset link.'}, status=status.HTTP_200_OK)

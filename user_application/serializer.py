@@ -17,13 +17,19 @@ class loginserializer(serializers.Serializer):
     username=serializers.CharField()
     password=serializers.CharField()
    
-
-
 class post_serialzer(serializers.Serializer):
     image=serializers.ImageField()
-    caption=serializers.CharField()
-    title=serializers.CharField()
+    caption=serializers.CharField(allow_null=True, required=False)
+    title=serializers.CharField(allow_null=True, required=False)
 
 
 class comment_serializer(serializers.Serializer):
     comments=serializers.CharField()
+
+
+class emailserializer(serializers.Serializer):
+    email=serializers.EmailField()
+
+
+class passwordserializer(serializers.Serializer):
+    password=serializers.CharField()
