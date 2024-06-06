@@ -3,9 +3,9 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from .models import user_registration,post,like,comment,expire_token_check,access_token
+from .models import user_registration,post,like,comment,access_token
 from django.contrib.auth import login , logout
-from django.contrib.auth.hashers import make_password,check_password
+from django.contrib.auth.hashers import make_password
 from .jwt_authorization import JWTAuthorization
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import *
 from rest_framework.permissions import *
-from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Import created serializer  and pagination 
 from .serializer import userSerializer,loginserializer,post_serialzer,comment_serializer,emailserializer, passwordserializer
